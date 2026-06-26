@@ -235,6 +235,35 @@
     }
 
     .legend-dot.pending { background: #9ca3af; }
+
+    .legend-tip {
+      margin-top: 0.6rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--color-border);
+      font-size: 0.7rem;
+      color: var(--color-text-muted);
+    }
+
+    .reset-btn {
+      margin-top: 0.5rem;
+      width: 100%;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.72rem;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      color: var(--color-text-muted);
+      background: #f9fafb;
+      border: 1px solid var(--color-border);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .reset-btn:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fca5a5;
+    }
   </style>
 </head>
 <body>
@@ -277,6 +306,8 @@
       <div class="legend-dot pending"></div>
       <span>待補充地點</span>
     </div>
+    <div class="legend-tip">圖釘可直接拖曳移動</div>
+    <button class="reset-btn" onclick="resetPins()">重設所有圖釘位置</button>
   </div>
 </div>
 
@@ -417,7 +448,20 @@
 
   // ── 放置圖釘 ──
   floodPoints.forEach(pt => {
-    const marker = L.marker([pt.lat, pt.lng], { icon: makeIcon(pt.id, pt.pending) }).addTo(map);
+    // 還原上次儲存的位置
+    const savedPos = localStorage.getItem('pin-pos-' + pt.id);
+    const pos = savedPos ? JSON.parse(savedPos) : [pt.lat, pt.lng];
+
+    const marker = L.marker(pos, {
+      icon: makeIcon(pt.id, pt.pending),
+      draggable: true,
+    }).addTo(map);
+
+    // 拖曳結束後儲存新位置
+    marker.on('dragend', () => {
+      const { lat, lng } = marker.getLatLng();
+      localStorage.setItem('pin-pos-' + pt.id, JSON.stringify([lat, lng]));
+    });
 
     const sourceHtml = pt.source
       ? `<a class="popup-link" href="${pt.source}" target="_blank" rel="noopener">
@@ -437,6 +481,13 @@
       </div>
     `, { maxWidth: 240 });
   });
+
+  // ── 重設所有圖釘至預設座標 ──
+  function resetPins() {
+    if (!confirm('確定要重設所有圖釘位置嗎？')) return;
+    floodPoints.forEach(pt => localStorage.removeItem('pin-pos-' + pt.id));
+    location.reload();
+  }
 
   // ── 從 localStorage 套用使用者修改過的地點名稱 ──
   floodPoints.forEach(pt => {
