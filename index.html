@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新竹市積水事件紀錄</title>
+  <style>
+    :root {
+      --color-bg: #f5f4f0;
+      --color-surface: #ffffff;
+      --color-header-bg: #1c2b3a;
+      --color-accent: #e8630a;
+      --color-text: #1a1a1a;
+      --color-text-muted: #6b7280;
+      --color-border: #e5e7eb;
+      --color-tag: #fef2f2;
+      --color-tag-text: #dc2626;
+      --color-edit-ring: #3b82f6;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', monospace;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--color-header-bg);
+      color: #fff;
+      padding: 2rem 2.5rem;
+    }
+
+    .header-inner { max-width: 1200px; margin: 0 auto; }
+
+    .header-tag {
+      display: inline-block;
+      background: var(--color-accent);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      margin-bottom: 0.75rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .header-meta {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.5);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .count-badge {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+    }
+
+    .count-badge strong { color: var(--color-text); font-weight: 600; }
+
+    .edit-hint {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .edit-hint::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-edit-ring);
+    }
+
+    .table-wrap {
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead { background: var(--color-header-bg); }
+
+    thead th {
+      color: rgba(255,255,255,0.65);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.9rem 1.25rem;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    thead th:first-child { padding-left: 1.5rem; }
+    thead th:last-child  { padding-right: 1.5rem; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--color-border);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+
+    td {
+      padding: 1.1rem 1.25rem;
+      vertical-align: middle;
+    }
+
+    td:first-child { padding-left: 1.5rem; }
+    td:last-child  { padding-right: 1.5rem; }
+
+    .cell-id {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .cell-time { white-space: nowrap; }
+
+    .time-date { font-weight: 600; }
+
+    .time-approx {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .cell-location { min-width: 200px; }
+
+    /* ── 可編輯地理位置 ── */
+    .location-name {
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.4rem;
+      border-radius: 4px;
+      padding: 0.25rem 0.4rem;
+      margin-left: -0.4rem;
+      outline: none;
+      transition: box-shadow 0.15s, background 0.15s;
+      cursor: text;
+      min-width: 80px;
+      display: inline-block;
+    }
+
+    .location-name:hover {
+      background: #f0f4ff;
+      box-shadow: 0 0 0 2px #bfdbfe;
+    }
+
+    .location-name:focus {
+      background: #fff;
+      box-shadow: 0 0 0 2px var(--color-edit-ring);
+    }
+
+    .location-name.saved-flash {
+      background: #dcfce7;
+      box-shadow: 0 0 0 2px #86efac;
+    }
+
+    .edit-badge {
+      font-size: 0.65rem;
+      color: var(--color-edit-ring);
+      font-weight: 500;
+      margin-left: 0.3rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .location-name:focus + .edit-badge,
+    .location-name:hover + .edit-badge {
+      opacity: 1;
+    }
+
+    .location-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.4rem;
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--color-tag);
+      color: var(--color-tag-text);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.18rem 0.5rem;
+      border-radius: 3px;
+      letter-spacing: 0.03em;
+    }
+
+    .cell-screenshot { width: 140px; }
+
+    .screenshot-thumb {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 1px solid var(--color-border);
+      display: block;
+      background: var(--color-bg);
+    }
+
+    .screenshot-placeholder {
+      width: 120px;
+      height: 80px;
+      border-radius: 5px;
+      border: 2px dashed var(--color-border);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      font-size: 0.7rem;
+      text-align: center;
+      line-height: 1.5;
+      background: var(--color-bg);
+    }
+
+    .cell-source a {
+      color: var(--color-accent);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .cell-source a:hover { text-decoration: underline; }
+
+    .source-platform {
+      font-size: 0.68rem;
+      color: var(--color-text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .icon-ext {
+      width: 12px;
+      height: 12px;
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-tag">即時回報</div>
+    <h1>新竹市積水事件紀錄</h1>
+    <div class="header-meta">
+      <span>資料來源：社群媒體回報</span>
+      <span>最後更新：2026-06-26</span>
+      <span>事件標籤：#626竹市淹水</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <p class="count-badge">共 <strong id="row-count">2</strong> 筆積水回報</p>
+    <p class="edit-hint">點擊地理位置名稱可直接編輯，按 Enter 儲存</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>編號</th>
+          <th>發佈時間</th>
+          <th>地理位置</th>
+          <th>截圖</th>
+          <th>來源</th>
+        </tr>
+      </thead>
+      <tbody id="flood-table">
+
+        <tr data-id="001">
+          <td class="cell-id">#001</td>
+          <td class="cell-time">
+            <div class="time-date">2026-06-26</div>
+            <div class="time-approx">約 08:54（發佈1小時前）</div>
+          </td>
+          <td class="cell-location">
+            <span
+              class="location-name"
+              contenteditable="true"
+              data-key="loc-001"
+              role="textbox"
+              aria-label="地理位置，可點擊編輯"
+            >新竹交流道湖泊區</span><span class="edit-badge">編輯</span>
+            <div class="location-tags">
+              <span class="tag">#淹水警戒</span>
+              <span class="tag">#626竹市淹水</span>
+            </div>
+          </td>
+          <td class="cell-screenshot">
+            <img
+              class="screenshot-thumb"
+              src="https://instagram.ftpe8-2.fna.fbcdn.net/v/t51.71878-15/730748818_2233069367547128_435341776786141715_n.jpg"
+              alt="新竹交流道湖泊區積水"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            >
+            <div class="screenshot-placeholder">請手動<br>貼入截圖</div>
+          </td>
+          <td class="cell-source">
+            <a href="https://www.threads.com/@jerrylin9471/post/DaB5Z0QEl2P" target="_blank" rel="noopener">
+              @jerrylin9471
+              <svg class="icon-ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M9 2h5m0 0v5m0-5L7 9"/>
+              </svg>
+            </a>
+            <div class="source-platform">Threads</div>
+          </td>
+        </tr>
+
+        <tr data-id="002">
+          <td class="cell-id">#002</td>
+          <td class="cell-time">
+            <div class="time-date">2026-06-26</div>
+            <div class="time-approx">約 09:12（發佈42分鐘前）</div>
+          </td>
+          <td class="cell-location">
+            <span
+              class="location-name"
+              contenteditable="true"
+              data-key="loc-002"
+              role="textbox"
+              aria-label="地理位置，可點擊編輯"
+            >東門溪（未設警戒線）</span><span class="edit-badge">編輯</span>
+            <div class="location-tags">
+              <span class="tag">#東門溪</span>
+              <span class="tag">#626竹市淹水</span>
+            </div>
+          </td>
+          <td class="cell-screenshot">
+            <img
+              class="screenshot-thumb"
+              src="https://instagram.ftpe8-2.fna.fbcdn.net/v/t51.71878-15/729754690_1555533422580857_4072645755468609167_n.jpg"
+              alt="東門溪積水"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            >
+            <div class="screenshot-placeholder">請手動<br>貼入截圖</div>
+          </td>
+          <td class="cell-source">
+            <a href="https://www.threads.com/@chipmunk.80286796/post/DaB72wAD1hY" target="_blank" rel="noopener">
+              @chipmunk.80286796
+              <svg class="icon-ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M9 2h5m0 0v5m0-5L7 9"/>
+              </svg>
+            </a>
+            <div class="source-platform">Threads</div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  新竹市積水事件紀錄 · 資料來自社群媒體公開貼文 · 2026-06-26
+</footer>
+
+<script>
+  // 從 localStorage 還原已儲存的地理位置名稱
+  document.querySelectorAll('.location-name[data-key]').forEach(el => {
+    const saved = localStorage.getItem(el.dataset.key);
+    if (saved) el.textContent = saved;
+
+    // Enter 鍵儲存，Escape 取消
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        el.blur();
+      }
+      if (e.key === 'Escape') {
+        const saved = localStorage.getItem(el.dataset.key);
+        if (saved) el.textContent = saved;
+        el.blur();
+      }
+    });
+
+    // 失焦時儲存並顯示閃爍確認
+    el.addEventListener('blur', () => {
+      const val = el.textContent.trim();
+      if (val) {
+        localStorage.setItem(el.dataset.key, val);
+        el.classList.add('saved-flash');
+        setTimeout(() => el.classList.remove('saved-flash'), 800);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
