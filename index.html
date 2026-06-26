@@ -449,6 +449,7 @@
   <div class="toolbar">
     <p class="count-badge">共 <strong id="row-count">9</strong> 筆積水回報</p>
     <p class="edit-hint">點擊地理位置名稱可直接編輯，按 Enter 儲存</p>
+    <button id="export-btn" onclick="exportScreenshots()" style="display:none; font-size:0.78rem; padding:0.4rem 0.9rem; background:var(--color-accent); color:#fff; border:none; border-radius:5px; cursor:pointer; font-family:var(--font-sans); font-weight:600;">⬇ 匯出截圖檔案</button>
   </div>
 
   <div class="table-wrap">
@@ -475,11 +476,11 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <div class="screenshot-wrap">
-              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+            <div class="screenshot-wrap" style="display:inline-block;">
+              <img class="screenshot-thumb" src="images/screenshot-001.png" alt="新竹交流道積水" data-default-src="images/screenshot-001.png" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:block;">
               <button class="screenshot-remove-btn" title="移除截圖">✕</button>
             </div>
-            <div class="screenshot-placeholder" data-row="001" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
+            <div class="screenshot-placeholder" data-row="001" title="點擊或拖入截圖" style="display:none;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
           <td class="cell-source">
@@ -724,9 +725,29 @@
     document.body.classList.toggle('admin-mode', admin);
     document.body.classList.toggle('view-mode', !admin);
     document.querySelector('.admin-toggle-btn').textContent = admin ? '🔓' : '🔒';
+    document.getElementById('export-btn').style.display = admin ? 'inline-block' : 'none';
     document.querySelectorAll('.location-name').forEach(el => {
       el.contentEditable = admin ? 'true' : 'false';
     });
+  }
+
+  function exportScreenshots() {
+    let count = 0;
+    for (let i = 1; i <= 20; i++) {
+      const id  = String(i).padStart(3, '0');
+      const data = localStorage.getItem('screenshot-' + id);
+      if (!data) continue;
+      const ext = data.includes('image/png') ? 'png' : 'jpg';
+      const a   = document.createElement('a');
+      a.href     = data;
+      a.download = `screenshot-${id}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      count++;
+    }
+    if (count === 0) alert('目前沒有已上傳的截圖');
+    else alert(`已下載 ${count} 張截圖，請回到 Claude 告訴我下載完成，我會自動放進 repo 並推上 GitHub。`);
   }
 
   function toggleAdmin() {
@@ -784,13 +805,21 @@
       if (file && file.type.startsWith('image/')) loadImage(file, img, wrap, placeholder, key);
     });
 
-    // 移除截圖
+    // 移除截圖（若有已提交的預設圖就還原，否則顯示上傳格）
     removeBtn.addEventListener('click', () => {
-      img.src = '';
-      img.style.display = 'none';
-      wrap.style.display = 'none';
-      placeholder.style.display = 'flex';
       localStorage.removeItem(key);
+      const defaultSrc = img.dataset.defaultSrc || '';
+      if (defaultSrc) {
+        img.src = defaultSrc;
+        img.style.display = 'block';
+        wrap.style.display = 'inline-block';
+        placeholder.style.display = 'none';
+      } else {
+        img.src = '';
+        img.style.display = 'none';
+        wrap.style.display = 'none';
+        placeholder.style.display = 'flex';
+      }
     });
   });
 
