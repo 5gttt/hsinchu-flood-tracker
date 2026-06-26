@@ -120,7 +120,7 @@
 
     .leaflet-popup-content {
       margin: 0;
-      min-width: 200px;
+      min-width: 280px;
     }
 
     .popup-img-wrap {
@@ -131,7 +131,7 @@
 
     .popup-img {
       width: 100%;
-      height: 150px;
+      height: 220px;
       object-fit: cover;
       display: block;
     }
@@ -582,7 +582,7 @@
 
     // 從 localStorage 取用者修改過的地點名稱
     const locName = localStorage.getItem('loc-' + pt.id) || pt.location;
-    marker.bindPopup(makePopupHtml(pt, locName), { maxWidth: 260 });
+    marker.bindPopup(makePopupHtml(pt, locName), { maxWidth: 320 });
   });
 
   // ── 重設所有圖釘至預設座標 ──
