@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>積水地圖 — 新竹市積水事件紀錄</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --color-bg: #f5f4f0;
+      --color-header-bg: #1c2b3a;
+      --color-accent: #e8630a;
+      --color-text: #1a1a1a;
+      --color-text-muted: #6b7280;
+      --color-border: #e5e7eb;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg);
+      color: var(--color-text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--color-header-bg);
+      color: #fff;
+      padding: 2rem 2.5rem;
+      flex-shrink: 0;
+    }
+
+    .header-inner { max-width: 1200px; margin: 0 auto; }
+
+    .header-tag {
+      display: inline-block;
+      background: var(--color-accent);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      margin-bottom: 0.75rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .header-meta {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.5);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+    }
+
+    /* ── 導覽 tab ── */
+    .page-nav {
+      background: #15232f;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .page-nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2.5rem;
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .nav-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .nav-tab:hover { color: rgba(255,255,255,0.85); }
+
+    .nav-tab.active {
+      color: #fff;
+      border-bottom-color: var(--color-accent);
+    }
+
+    /* ── 地圖容器 ── */
+    .map-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── 自訂 Leaflet popup ── */
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .leaflet-popup-content {
+      margin: 0;
+      min-width: 200px;
+    }
+
+    .popup-inner {
+      padding: 0.9rem 1rem;
+    }
+
+    .popup-id {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .popup-location {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 0.3rem;
+      line-height: 1.3;
+    }
+
+    .popup-time {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .popup-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    .popup-link:hover { text-decoration: underline; }
+
+    .popup-pending {
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
+
+    /* ── 自訂圖釘 ── */
+    .flood-pin {
+      width: 32px;
+      height: 32px;
+      border-radius: 50% 50% 50% 0;
+      background: var(--color-accent);
+      transform: rotate(-45deg);
+      border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flood-pin::after {
+      content: attr(data-num);
+      transform: rotate(45deg);
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      font-family: var(--font-sans);
+    }
+
+    .flood-pin.pending {
+      background: #9ca3af;
+    }
+
+    /* ── 圖例 ── */
+    .map-legend {
+      position: absolute;
+      bottom: 2rem;
+      left: 1rem;
+      z-index: 1000;
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+
+    .map-legend strong {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text);
+      margin-bottom: 0.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      flex-shrink: 0;
+    }
+
+    .legend-dot.pending { background: #9ca3af; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-tag">即時回報</div>
+    <h1>新竹市積水事件紀錄</h1>
+    <div class="header-meta">
+      <span>資料來源：社群媒體回報</span>
+      <span>最後更新：2026-06-26</span>
+      <span>事件標籤：#626竹市淹水</span>
+    </div>
+  </div>
+</header>
+
+<nav class="page-nav">
+  <div class="page-nav-inner">
+    <a href="index.html" class="nav-tab">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="14" height="11" rx="1"/><path d="M1 7h14"/><path d="M5 3V2M11 3V2"/></svg>
+      紀錄表格
+    </a>
+    <a href="map.html" class="nav-tab active">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2C5.24 2 3 4.24 3 7c0 4 5 9 5 9s5-5 5-9c0-2.76-2.24-5-5-5z"/><circle cx="8" cy="7" r="1.5"/></svg>
+      積水地圖
+    </a>
+  </div>
+</nav>
+
+<div class="map-wrap">
+  <div id="map"></div>
+
+  <div class="map-legend">
+    <strong>圖例</strong>
+    <div class="legend-item">
+      <div class="legend-dot"></div>
+      <span>已確認積水地點</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot pending"></div>
+      <span>待補充地點</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // ── 積水地點資料 ──
+  const floodPoints = [
+    {
+      id: '001',
+      location: '新竹交流道',
+      time: '2026-06-26 08:51',
+      source: 'https://www.threads.com/@jerrylin9471/post/DaB5Z0QEl2P',
+      account: '@jerrylin9471',
+      lat: 24.7835,
+      lng: 120.9932,
+      pending: false,
+    },
+    {
+      id: '002',
+      location: '信義街勝利路護城河',
+      time: '2026-06-26 09:14',
+      source: 'https://www.threads.com/@chipmunk.80286796/post/DaB72wAD1hY',
+      account: '@chipmunk.80286796',
+      lat: 24.8022,
+      lng: 120.9660,
+      pending: false,
+    },
+    {
+      id: '003',
+      location: '光復路建中路口附近',
+      time: '2026-06-26 08:53',
+      source: 'https://www.threads.com/@arfun777/post/DaB5Sp3AY9L',
+      account: '@arfun777',
+      lat: 24.7978,
+      lng: 120.9726,
+      pending: false,
+    },
+    {
+      id: '004',
+      location: '待補充',
+      time: '2026-06-26 09:12',
+      source: null,
+      account: null,
+      lat: 24.8038,
+      lng: 120.9700,
+      pending: true,
+    },
+    {
+      id: '005',
+      location: '往竹北高鐵路程',
+      time: '2026-06-26 09:30',
+      source: 'https://www.threads.com/@03.04_hua/post/DaB9u4mEyxO',
+      account: '@03.04_hua',
+      lat: 24.8247,
+      lng: 121.0012,
+      pending: false,
+    },
+    {
+      id: '006',
+      location: '經國路一段十字路口',
+      time: '2026-06-26 09:30',
+      source: 'https://www.threads.com/@guanyu_0615/post/DaB-CzTEgDR',
+      account: '@guanyu_0615',
+      lat: 24.7861,
+      lng: 120.9814,
+      pending: false,
+    },
+    {
+      id: '007',
+      location: '竹科',
+      time: '2026-06-26 08:10（影片時間）',
+      source: 'https://www.threads.com/@weeyyyy1111/post/DaB14Lujx0E',
+      account: '@weeyyyy1111',
+      lat: 24.7862,
+      lng: 121.0052,
+      pending: false,
+    },
+    {
+      id: '008',
+      location: '竹蓮地下道',
+      time: '2026-06-26 09:36',
+      source: 'https://www.threads.com/@l.uu.414/post/DaB-SDsE3zn',
+      account: '@l.uu.414',
+      lat: 24.7988,
+      lng: 120.9688,
+      pending: false,
+    },
+    {
+      id: '009',
+      location: '公道五下面的停車場',
+      time: '2026-06-26 09:20',
+      source: 'https://www.threads.com/@daiyi.xu0507/post/DaB8iXLjGzB',
+      account: '@daiyi.xu0507',
+      lat: 24.7925,
+      lng: 120.9772,
+      pending: false,
+    },
+  ];
+
+  // ── 初始化地圖，對準新竹市 ──
+  const map = L.map('map', {
+    center: [24.7990, 120.9810],
+    zoom: 13,
+    zoomControl: true,
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(map);
+
+  // ── 自訂圖釘圖示 ──
+  function makeIcon(id, pending) {
+    return L.divIcon({
+      className: '',
+      html: `
+        <div style="
+          width:34px; height:34px;
+          border-radius:50% 50% 50% 0;
+          background:${pending ? '#9ca3af' : '#e8630a'};
+          transform:rotate(-45deg);
+          border:3px solid #fff;
+          box-shadow:0 2px 8px rgba(0,0,0,0.28);
+          display:flex; align-items:center; justify-content:center;
+        ">
+          <span style="
+            transform:rotate(45deg);
+            font-size:10px; font-weight:800;
+            color:#fff; line-height:1;
+            font-family:-apple-system,sans-serif;
+          ">${id}</span>
+        </div>`,
+      iconSize: [34, 34],
+      iconAnchor: [17, 34],
+      popupAnchor: [0, -36],
+    });
+  }
+
+  // ── 放置圖釘 ──
+  floodPoints.forEach(pt => {
+    const marker = L.marker([pt.lat, pt.lng], { icon: makeIcon(pt.id, pt.pending) }).addTo(map);
+
+    const sourceHtml = pt.source
+      ? `<a class="popup-link" href="${pt.source}" target="_blank" rel="noopener">
+           ${pt.account}
+           <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5">
+             <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M9 2h5m0 0v5m0-5L7 9"/>
+           </svg>
+         </a>`
+      : `<span class="popup-pending">來源待補充</span>`;
+
+    marker.bindPopup(`
+      <div class="popup-inner">
+        <div class="popup-id">#${pt.id}</div>
+        <div class="popup-location">${pt.location}</div>
+        <div class="popup-time">${pt.time}</div>
+        ${sourceHtml}
+      </div>
+    `, { maxWidth: 240 });
+  });
+
+  // ── 從 localStorage 套用使用者修改過的地點名稱 ──
+  floodPoints.forEach(pt => {
+    const saved = localStorage.getItem('loc-' + pt.id);
+    if (saved) {
+      // 更新 popup 顯示（重新綁定）
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+          const latlng = layer.getLatLng();
+          if (Math.abs(latlng.lat - pt.lat) < 0.0001 && Math.abs(latlng.lng - pt.lng) < 0.0001) {
+            const sourceHtml = pt.source
+              ? `<a class="popup-link" href="${pt.source}" target="_blank" rel="noopener">
+                   ${pt.account}
+                   <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5">
+                     <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M9 2h5m0 0v5m0-5L7 9"/>
+                   </svg>
+                 </a>`
+              : `<span class="popup-pending">來源待補充</span>`;
+
+            layer.bindPopup(`
+              <div class="popup-inner">
+                <div class="popup-id">#${pt.id}</div>
+                <div class="popup-location">${saved}</div>
+                <div class="popup-time">${pt.time}</div>
+                ${sourceHtml}
+              </div>
+            `, { maxWidth: 240 });
+          }
+        }
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
