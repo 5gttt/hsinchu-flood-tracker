@@ -256,7 +256,22 @@
       text-align: center;
       line-height: 1.5;
       background: var(--color-bg);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
     }
+
+    .screenshot-placeholder:hover {
+      border-color: var(--color-edit-ring);
+      background: #eff6ff;
+      color: var(--color-edit-ring);
+    }
+
+    .screenshot-placeholder.drag-over {
+      border-color: var(--color-accent);
+      background: var(--color-accent-light);
+    }
+
+    .upload-input { display: none; }
 
     .cell-source a {
       color: var(--color-accent);
@@ -350,7 +365,10 @@
               alt="新竹交流道湖泊區積水"
               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
             >
-            <div class="screenshot-placeholder">請手動<br>貼入截圖</div>
+            <div class="screenshot-placeholder" data-row="001" title="點擊或拖入截圖">
+              點擊<br>上傳截圖
+            </div>
+            <input type="file" class="upload-input" accept="image/*">
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@jerrylin9471/post/DaB5Z0QEl2P" target="_blank" rel="noopener">
@@ -389,7 +407,10 @@
               alt="東門溪積水"
               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
             >
-            <div class="screenshot-placeholder">請手動<br>貼入截圖</div>
+            <div class="screenshot-placeholder" data-row="002" title="點擊或拖入截圖">
+              點擊<br>上傳截圖
+            </div>
+            <input type="file" class="upload-input" accept="image/*">
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@chipmunk.80286796/post/DaB72wAD1hY" target="_blank" rel="noopener">
@@ -412,7 +433,56 @@
 </footer>
 
 <script>
-  // 從 localStorage 還原已儲存的地理位置名稱
+  // ── 截圖上傳：點擊或拖曳 ──
+  document.querySelectorAll('.screenshot-placeholder').forEach(placeholder => {
+    const input = placeholder.nextElementSibling;
+    const img   = placeholder.previousElementSibling;
+    const key   = 'screenshot-' + placeholder.dataset.row;
+
+    // 還原已儲存截圖
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      img.src = saved;
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+    }
+
+    // 點擊開啟檔案選擇器
+    placeholder.addEventListener('click', () => input.click());
+
+    // 檔案選擇後讀取
+    input.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) loadImage(file, img, placeholder, key);
+    });
+
+    // 拖曳支援
+    placeholder.addEventListener('dragover', e => {
+      e.preventDefault();
+      placeholder.classList.add('drag-over');
+    });
+    placeholder.addEventListener('dragleave', () => placeholder.classList.remove('drag-over'));
+    placeholder.addEventListener('drop', e => {
+      e.preventDefault();
+      placeholder.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) loadImage(file, img, placeholder, key);
+    });
+  });
+
+  function loadImage(file, img, placeholder, key) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      img.src = dataUrl;
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+      try { localStorage.setItem(key, dataUrl); } catch(_) {}
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── 地理位置編輯：從 localStorage 還原 ──
   document.querySelectorAll('.location-name[data-key]').forEach(el => {
     const saved = localStorage.getItem(el.dataset.key);
     if (saved) el.textContent = saved;
