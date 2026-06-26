@@ -123,6 +123,19 @@
       min-width: 200px;
     }
 
+    .popup-img-wrap {
+      width: 100%;
+      line-height: 0;
+      background: var(--color-bg);
+    }
+
+    .popup-img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      display: block;
+    }
+
     .popup-inner {
       padding: 0.9rem 1rem;
     }
@@ -520,24 +533,16 @@
     });
   }
 
-  // ── 放置圖釘 ──
-  floodPoints.forEach(pt => {
-    // 還原上次儲存的位置
-    const savedPos = localStorage.getItem('pin-pos-' + pt.id);
-    const pos = savedPos ? JSON.parse(savedPos) : [pt.lat, pt.lng];
+  // ── Popup HTML 產生器（含截圖）──
+  function makePopupHtml(pt, locName) {
+    // 優先用 localStorage 截圖，否則嘗試已 commit 的圖片檔
+    const lsSrc  = localStorage.getItem('screenshot-' + pt.id);
+    const imgSrc = lsSrc || `images/screenshot-${pt.id}.png`;
 
-    const marker = L.marker(pos, {
-      icon: makeIcon(pt.id, pt.pending),
-      draggable: false,
-    }).addTo(map);
-
-    allMarkers.push(marker);
-
-    // 拖曳結束後儲存新位置
-    marker.on('dragend', () => {
-      const { lat, lng } = marker.getLatLng();
-      localStorage.setItem('pin-pos-' + pt.id, JSON.stringify([lat, lng]));
-    });
+    const imgHtml = `<div class="popup-img-wrap">
+      <img class="popup-img" src="${imgSrc}" alt=""
+        onerror="this.parentElement.style.display='none';">
+    </div>`;
 
     const sourceHtml = pt.source
       ? `<a class="popup-link" href="${pt.source}" target="_blank" rel="noopener">
@@ -548,14 +553,36 @@
          </a>`
       : `<span class="popup-pending">來源待補充</span>`;
 
-    marker.bindPopup(`
+    return `
+      ${imgHtml}
       <div class="popup-inner">
         <div class="popup-id">#${pt.id}</div>
-        <div class="popup-location">${pt.location}</div>
+        <div class="popup-location">${locName}</div>
         <div class="popup-time">${pt.time}</div>
         ${sourceHtml}
-      </div>
-    `, { maxWidth: 240 });
+      </div>`;
+  }
+
+  // ── 放置圖釘 ──
+  floodPoints.forEach(pt => {
+    const savedPos = localStorage.getItem('pin-pos-' + pt.id);
+    const pos = savedPos ? JSON.parse(savedPos) : [pt.lat, pt.lng];
+
+    const marker = L.marker(pos, {
+      icon: makeIcon(pt.id, pt.pending),
+      draggable: false,
+    }).addTo(map);
+
+    allMarkers.push(marker);
+
+    marker.on('dragend', () => {
+      const { lat, lng } = marker.getLatLng();
+      localStorage.setItem('pin-pos-' + pt.id, JSON.stringify([lat, lng]));
+    });
+
+    // 從 localStorage 取用者修改過的地點名稱
+    const locName = localStorage.getItem('loc-' + pt.id) || pt.location;
+    marker.bindPopup(makePopupHtml(pt, locName), { maxWidth: 260 });
   });
 
   // ── 重設所有圖釘至預設座標 ──
@@ -565,40 +592,7 @@
     location.reload();
   }
 
-  // 所有圖釘放完後套用模式（決定是否可拖曳）
   applyMode();
-
-  // ── 從 localStorage 套用使用者修改過的地點名稱 ──
-  floodPoints.forEach(pt => {
-    const saved = localStorage.getItem('loc-' + pt.id);
-    if (saved) {
-      // 更新 popup 顯示（重新綁定）
-      map.eachLayer(layer => {
-        if (layer instanceof L.Marker) {
-          const latlng = layer.getLatLng();
-          if (Math.abs(latlng.lat - pt.lat) < 0.0001 && Math.abs(latlng.lng - pt.lng) < 0.0001) {
-            const sourceHtml = pt.source
-              ? `<a class="popup-link" href="${pt.source}" target="_blank" rel="noopener">
-                   ${pt.account}
-                   <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5">
-                     <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M9 2h5m0 0v5m0-5L7 9"/>
-                   </svg>
-                 </a>`
-              : `<span class="popup-pending">來源待補充</span>`;
-
-            layer.bindPopup(`
-              <div class="popup-inner">
-                <div class="popup-id">#${pt.id}</div>
-                <div class="popup-location">${saved}</div>
-                <div class="popup-time">${pt.time}</div>
-                ${sourceHtml}
-              </div>
-            `, { maxWidth: 240 });
-          }
-        }
-      });
-    }
-  });
 </script>
 
 </body>
