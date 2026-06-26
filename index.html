@@ -303,7 +303,51 @@
       padding: 2rem;
       font-size: 0.78rem;
       color: var(--color-text-muted);
+      position: relative;
     }
+
+    .admin-toggle-btn {
+      position: absolute;
+      right: 1.5rem;
+      bottom: 1.75rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      opacity: 0.2;
+      transition: opacity 0.2s;
+      line-height: 1;
+      padding: 0.25rem;
+    }
+    .admin-toggle-btn:hover { opacity: 0.7; }
+
+    /* ── 管理模式提示列 ── */
+    .admin-bar {
+      display: none;
+      background: #fef9c3;
+      border-bottom: 1px solid #fde047;
+      padding: 0.45rem 2.5rem;
+      font-size: 0.75rem;
+      color: #854d0e;
+      font-weight: 500;
+      text-align: center;
+    }
+    body.admin-mode .admin-bar { display: block; }
+
+    /* ── 閱覽模式：隱藏所有編輯介面 ── */
+    body.view-mode .location-name {
+      cursor: default;
+      pointer-events: none;
+    }
+    body.view-mode .location-name:hover,
+    body.view-mode .location-name:focus {
+      background: none;
+      box-shadow: none;
+    }
+    body.view-mode .edit-badge { display: none; }
+    body.view-mode .edit-hint  { display: none; }
+    body.view-mode .screenshot-placeholder { display: none !important; }
+    body.view-mode .upload-input { display: none; }
 
     /* ── 導覽 tab ── */
     .page-nav {
@@ -340,7 +384,9 @@
     }
   </style>
 </head>
-<body>
+<body class="view-mode">
+
+<div class="admin-bar">✏️ 管理模式中 — 地理位置可點擊編輯，截圖欄可上傳圖片</div>
 
 <header>
   <div class="header-inner">
@@ -605,9 +651,43 @@
 
 <footer>
   新竹市積水事件紀錄 · 資料來自社群媒體公開貼文 · 2026-06-26
+  <button class="admin-toggle-btn" onclick="toggleAdmin()" title="管理員登入／登出">🔒</button>
 </footer>
 
 <script>
+  // ── 管理員模式 ──
+  const ADMIN_PW = 'hsinchu626';
+
+  function isAdmin() { return sessionStorage.getItem('admin') === '1'; }
+
+  function applyMode() {
+    const admin = isAdmin();
+    document.body.classList.toggle('admin-mode', admin);
+    document.body.classList.toggle('view-mode', !admin);
+    document.querySelector('.admin-toggle-btn').textContent = admin ? '🔓' : '🔒';
+    document.querySelectorAll('.location-name').forEach(el => {
+      el.contentEditable = admin ? 'true' : 'false';
+    });
+  }
+
+  function toggleAdmin() {
+    if (isAdmin()) {
+      sessionStorage.removeItem('admin');
+      applyMode();
+      return;
+    }
+    const pw = prompt('請輸入管理員密碼：');
+    if (pw === null) return;
+    if (pw === ADMIN_PW) {
+      sessionStorage.setItem('admin', '1');
+      applyMode();
+    } else {
+      alert('密碼錯誤');
+    }
+  }
+
+  applyMode();
+
   // ── 截圖上傳：點擊或拖曳 ──
   document.querySelectorAll('.screenshot-placeholder').forEach(placeholder => {
     const input = placeholder.nextElementSibling;
