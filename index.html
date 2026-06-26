@@ -233,6 +233,12 @@
 
     .cell-screenshot { width: 140px; }
 
+    .screenshot-wrap {
+      position: relative;
+      display: inline-block;
+      width: 120px;
+    }
+
     .screenshot-thumb {
       width: 120px;
       height: 80px;
@@ -241,6 +247,32 @@
       border: 1px solid var(--color-border);
       display: block;
       background: var(--color-bg);
+    }
+
+    .screenshot-remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: none;
+      font-size: 0.7rem;
+      line-height: 1;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .screenshot-remove-btn:hover { background: #dc2626; }
+
+    /* 只在管理模式 + hover 時顯示移除鈕 */
+    body.admin-mode .screenshot-wrap:hover .screenshot-remove-btn {
+      display: flex;
     }
 
     .screenshot-placeholder {
@@ -443,7 +475,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="001" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -467,7 +502,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="002" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -491,7 +529,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="003" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -515,7 +556,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="004" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -535,7 +579,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="005" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -559,7 +606,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="006" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -583,7 +633,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="007" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -607,7 +660,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="008" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -631,7 +687,10 @@
             <div class="location-tags"><span class="tag">#626竹市淹水</span></div>
           </td>
           <td class="cell-screenshot">
-            <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+            <div class="screenshot-wrap">
+              <img class="screenshot-thumb" src="" alt="" onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';" style="display:none;">
+              <button class="screenshot-remove-btn" title="移除截圖">✕</button>
+            </div>
             <div class="screenshot-placeholder" data-row="009" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
           </td>
@@ -690,15 +749,18 @@
 
   // ── 截圖上傳：點擊或拖曳 ──
   document.querySelectorAll('.screenshot-placeholder').forEach(placeholder => {
-    const input = placeholder.nextElementSibling;
-    const img   = placeholder.previousElementSibling;
-    const key   = 'screenshot-' + placeholder.dataset.row;
+    const input      = placeholder.nextElementSibling;          // <input type="file">
+    const wrap       = placeholder.previousElementSibling;      // .screenshot-wrap
+    const img        = wrap.querySelector('.screenshot-thumb');
+    const removeBtn  = wrap.querySelector('.screenshot-remove-btn');
+    const key        = 'screenshot-' + placeholder.dataset.row;
 
     // 還原已儲存截圖
     const saved = localStorage.getItem(key);
     if (saved) {
       img.src = saved;
       img.style.display = 'block';
+      wrap.style.display = 'inline-block';
       placeholder.style.display = 'none';
     }
 
@@ -708,29 +770,37 @@
     // 檔案選擇後讀取
     input.addEventListener('change', e => {
       const file = e.target.files[0];
-      if (file) loadImage(file, img, placeholder, key);
+      if (file) loadImage(file, img, wrap, placeholder, key);
+      input.value = '';
     });
 
     // 拖曳支援
-    placeholder.addEventListener('dragover', e => {
-      e.preventDefault();
-      placeholder.classList.add('drag-over');
-    });
+    placeholder.addEventListener('dragover', e => { e.preventDefault(); placeholder.classList.add('drag-over'); });
     placeholder.addEventListener('dragleave', () => placeholder.classList.remove('drag-over'));
     placeholder.addEventListener('drop', e => {
       e.preventDefault();
       placeholder.classList.remove('drag-over');
       const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) loadImage(file, img, placeholder, key);
+      if (file && file.type.startsWith('image/')) loadImage(file, img, wrap, placeholder, key);
+    });
+
+    // 移除截圖
+    removeBtn.addEventListener('click', () => {
+      img.src = '';
+      img.style.display = 'none';
+      wrap.style.display = 'none';
+      placeholder.style.display = 'flex';
+      localStorage.removeItem(key);
     });
   });
 
-  function loadImage(file, img, placeholder, key) {
+  function loadImage(file, img, wrap, placeholder, key) {
     const reader = new FileReader();
     reader.onload = e => {
       const dataUrl = e.target.result;
       img.src = dataUrl;
       img.style.display = 'block';
+      wrap.style.display = 'inline-block';
       placeholder.style.display = 'none';
       try { localStorage.setItem(key, dataUrl); } catch(_) {}
     };
