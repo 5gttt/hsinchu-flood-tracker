@@ -1118,21 +1118,13 @@
       if (file && file.type.startsWith('image/')) loadImage(file, img, wrap, placeholder, key);
     });
 
-    // 移除截圖（若有已提交的預設圖就還原，否則顯示上傳格）
+    // 移除截圖：清除 localStorage，顯示上傳格讓管理員可換圖
     removeBtn.addEventListener('click', () => {
       localStorage.removeItem(key);
-      const defaultSrc = img.dataset.defaultSrc || '';
-      if (defaultSrc) {
-        img.src = defaultSrc;
-        img.style.display = 'block';
-        wrap.style.display = 'inline-block';
-        placeholder.style.display = 'none';
-      } else {
-        img.src = '';
-        img.style.display = 'none';
-        wrap.style.display = 'none';
-        placeholder.style.display = 'flex';
-      }
+      img.src = '';
+      img.style.display = 'none';
+      wrap.style.display = 'none';
+      placeholder.style.display = 'flex';
     });
   });
 
