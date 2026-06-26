@@ -381,6 +381,74 @@
     body.view-mode .screenshot-placeholder { display: none !important; }
     body.view-mode .upload-input { display: none; }
 
+    /* ── GitHub 同步 UI ── */
+    .gh-status {
+      font-size: 0.65rem;
+      margin-top: 0.3rem;
+      min-height: 0.9rem;
+      line-height: 1.4;
+      color: #6b7280;
+    }
+
+    .gh-indicator {
+      margin-left: 1.25rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      white-space: nowrap;
+    }
+    .gh-indicator.connected    { color: #16a34a; }
+    .gh-indicator.disconnected { color: #b45309; text-decoration-style: dashed; }
+    .gh-indicator.syncing      { color: #3b82f6; }
+
+    .gh-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .gh-modal {
+      background: #fff; border-radius: 10px;
+      padding: 1.5rem; width: 380px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    }
+
+    .gh-modal h3 { font-size: 1rem; margin-bottom: 0.35rem; }
+
+    .gh-modal p {
+      font-size: 0.78rem; color: #6b7280;
+      margin-bottom: 1rem; line-height: 1.55;
+    }
+
+    .gh-modal code {
+      background: #f3f4f6; padding: 0.1rem 0.35rem;
+      border-radius: 3px; font-size: 0.75rem;
+    }
+
+    .gh-modal input[type=password] {
+      width: 100%; padding: 0.5rem 0.75rem;
+      border: 1px solid #e5e7eb; border-radius: 6px;
+      font-size: 0.85rem; font-family: var(--font-sans);
+      margin-bottom: 0.5rem; outline: none;
+    }
+    .gh-modal input[type=password]:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px #bfdbfe; }
+
+    .gh-test-result { font-size: 0.75rem; min-height: 1.1rem; margin-bottom: 0.75rem; }
+
+    .gh-modal-btns { display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; }
+
+    .gh-modal-btns button {
+      padding: 0.4rem 0.9rem; border-radius: 5px;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      font-family: var(--font-sans);
+      border: 1px solid #e5e7eb; background: #f9fafb; color: #374151;
+    }
+    .gh-modal-btns .btn-save  { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+    .gh-modal-btns .btn-clear { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
     /* ── 導覽 tab ── */
     .page-nav {
       background: #15232f;
@@ -418,7 +486,10 @@
 </head>
 <body class="view-mode">
 
-<div class="admin-bar">✏️ 管理模式中 — 地理位置可點擊編輯，截圖欄可上傳圖片</div>
+<div class="admin-bar">
+  ✏️ 管理模式中 — 地理位置可點擊編輯，截圖欄可上傳圖片
+  <span id="gh-indicator" class="gh-indicator disconnected" onclick="showGhModal()" title="點擊設定 GitHub 自動同步">○ 設定 GitHub</span>
+</div>
 
 <header>
   <div class="header-inner">
@@ -482,6 +553,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="001" title="點擊或拖入截圖" style="display:none;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@jerrylin9471/post/DaB5Z0QEl2P" target="_blank" rel="noopener">
@@ -509,6 +581,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="002" title="點擊或拖入截圖" style="display:none;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@chipmunk.80286796/post/DaB72wAD1hY" target="_blank" rel="noopener">
@@ -536,6 +609,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="003" title="點擊或拖入截圖" style="display:none;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@arfun777/post/DaB5Sp3AY9L" target="_blank" rel="noopener">
@@ -563,6 +637,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="004" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <span style="color:var(--color-text-muted);font-size:0.82rem;">—</span>
@@ -586,6 +661,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="005" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@03.04_hua/post/DaB9u4mEyxO" target="_blank" rel="noopener">
@@ -613,6 +689,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="006" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@guanyu_0615/post/DaB-CzTEgDR" target="_blank" rel="noopener">
@@ -640,6 +717,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="007" title="點擊或拖入截圖" style="display:none;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@weeyyyy1111/post/DaB14Lujx0E" target="_blank" rel="noopener">
@@ -667,6 +745,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="008" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@l.uu.414/post/DaB-SDsE3zn" target="_blank" rel="noopener">
@@ -694,6 +773,7 @@
             </div>
             <div class="screenshot-placeholder" data-row="009" title="點擊或拖入截圖" style="display:none;">點擊<br>上傳截圖</div>
             <input type="file" class="upload-input" accept="image/*">
+            <div class="gh-status"></div>
           </td>
           <td class="cell-source">
             <a href="https://www.threads.com/@daiyi.xu0507/post/DaB8iXLjGzB" target="_blank" rel="noopener">
@@ -729,6 +809,207 @@
     document.querySelectorAll('.location-name').forEach(el => {
       el.contentEditable = admin ? 'true' : 'false';
     });
+    if (admin) updateGhIndicator();
+  }
+
+  // ── GitHub API ──
+  const GH_OWNER  = '5gttt';
+  const GH_REPO   = 'hsinchu-flood-tracker';
+  const GH_BRANCH = 'main';
+
+  function ghToken() { return localStorage.getItem('gh-pat') || ''; }
+
+  function ghHeaders() {
+    return {
+      'Authorization': `Bearer ${ghToken()}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async function ghGetFile(path) {
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}`,
+      { headers: ghHeaders() }
+    );
+    return r.ok ? r.json() : null;
+  }
+
+  async function ghPutFile(path, base64Content, message, sha) {
+    const body = { message, content: base64Content, branch: GH_BRANCH };
+    if (sha) body.sha = sha;
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+      { method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body) }
+    );
+    return r.ok ? r.json() : null;
+  }
+
+  function ghDecode(b64) {
+    const bytes = Uint8Array.from(atob(b64.replace(/\n/g, '')), c => c.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+
+  function ghEncode(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    const chunk = 8192;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+  }
+
+  // 截圖 → 上傳 GitHub + 更新 HTML
+  async function commitImageToGitHub(rowId, dataUrl, statusEl) {
+    if (!ghToken()) {
+      statusEl.textContent = '⚠ 未設定 Token，截圖僅存本機';
+      statusEl.style.color = '#f59e0b';
+      return;
+    }
+    statusEl.textContent = '⏳ 上傳中…';
+    statusEl.style.color = '#6b7280';
+
+    try {
+      const base64 = dataUrl.split(',')[1];
+      const path   = `images/screenshot-${rowId}.png`;
+
+      const existing = await ghGetFile(path);
+      const result   = await ghPutFile(path, base64, `feat: 更新 #${rowId} 截圖`, existing?.sha);
+      if (!result) throw new Error('commit failed');
+
+      // 若 HTML 尚未記錄此截圖，一起更新 HTML
+      const rowEl = document.querySelector(`tr[data-id="${rowId}"]`);
+      const img   = rowEl?.querySelector('.screenshot-thumb');
+      if (img && !img.dataset.defaultSrc) {
+        await updateHtmlRowScreenshot(rowId, path);
+        img.dataset.defaultSrc = path;
+      }
+
+      statusEl.textContent = '✓ 已同步 GitHub（1~2 分鐘後公開更新）';
+      statusEl.style.color = '#16a34a';
+      setTimeout(() => { statusEl.textContent = ''; }, 6000);
+    } catch {
+      statusEl.textContent = '✗ 同步失敗，截圖已存本機';
+      statusEl.style.color = '#dc2626';
+    }
+  }
+
+  // 更新 GitHub 上 HTML 的截圖欄（首次提交截圖時）
+  async function updateHtmlRowScreenshot(rowId, imagePath) {
+    const file = await ghGetFile('index.html');
+    if (!file) return;
+
+    const html = ghDecode(file.content);
+
+    const rowEl = document.querySelector(`tr[data-id="${rowId}"]`);
+    const locName = rowEl?.querySelector('.location-name')?.textContent.trim() || rowId;
+    const alt = locName + '積水';
+
+    const ONERR = `onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex'; this.parentElement.style.display='none';"`;
+
+    const oldImg   = `<div class="screenshot-wrap">\n              <img class="screenshot-thumb" src="" alt="" ${ONERR} style="display:none;">\n              <button class="screenshot-remove-btn" title="移除截圖">✕</button>\n            </div>\n            <div class="screenshot-placeholder" data-row="${rowId}" title="點擊或拖入截圖" style="display:flex;">點擊<br>上傳截圖</div>`;
+    const newImg   = `<div class="screenshot-wrap" style="display:inline-block;">\n              <img class="screenshot-thumb" src="${imagePath}" alt="${alt}" data-default-src="${imagePath}" ${ONERR} style="display:block;">\n              <button class="screenshot-remove-btn" title="移除截圖">✕</button>\n            </div>\n            <div class="screenshot-placeholder" data-row="${rowId}" title="點擊或拖入截圖" style="display:none;">點擊<br>上傳截圖</div>`;
+
+    if (!html.includes(oldImg)) return;
+
+    const newHtml = html.replace(oldImg, newImg);
+    await ghPutFile('index.html', ghEncode(newHtml), `feat: #${rowId} 截圖 HTML`, file.sha);
+  }
+
+  // 地點名稱 → 同步 GitHub HTML
+  async function syncLocationToGitHub(rowId, newName) {
+    const ind = document.getElementById('gh-indicator');
+    if (ind) { ind.textContent = '● 同步中…'; ind.className = 'gh-indicator syncing'; }
+
+    try {
+      const file = await ghGetFile('index.html');
+      if (!file) throw new Error();
+
+      const html    = ghDecode(file.content);
+      const re      = new RegExp(`(<span[^>]+data-key="loc-${rowId}"[^>]*>)[^<]*(</span>)`);
+      if (!re.test(html)) throw new Error('span not found');
+
+      const newHtml = html.replace(re, `$1${newName}$2`);
+      await ghPutFile('index.html', ghEncode(newHtml), `fix: 更正 #${rowId} 地點名稱`, file.sha);
+
+      if (ind) { ind.textContent = '● GitHub 已連線'; ind.className = 'gh-indicator connected'; }
+    } catch {
+      if (ind) {
+        ind.textContent = '● 同步失敗';
+        ind.className = 'gh-indicator disconnected';
+        setTimeout(() => updateGhIndicator(), 4000);
+      }
+    }
+  }
+
+  // ── GitHub PAT 設定 Modal ──
+  function showGhModal() {
+    if (document.getElementById('gh-modal-overlay')) { document.getElementById('gh-modal-overlay').remove(); return; }
+    const overlay = document.createElement('div');
+    overlay.id = 'gh-modal-overlay';
+    overlay.className = 'gh-modal-overlay';
+    const token = ghToken();
+    overlay.innerHTML = `
+      <div class="gh-modal">
+        <h3>🔑 GitHub 自動同步設定</h3>
+        <p>輸入 GitHub Personal Access Token（需要 <code>repo</code> 權限）。<br>
+           Token 只存在你的瀏覽器 localStorage，不會外傳。<br>
+           設定後截圖上傳、地點修改均自動 commit 到 GitHub。</p>
+        <input type="password" id="gh-pat-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+               value="${token}" autocomplete="off" spellcheck="false">
+        <div class="gh-test-result" id="gh-test-result"></div>
+        <div class="gh-modal-btns">
+          ${token ? '<button class="btn-clear" onclick="clearGhToken()">清除 Token</button>' : ''}
+          <button onclick="testGhToken()">測試連線</button>
+          <button onclick="document.getElementById(\'gh-modal-overlay\').remove()">取消</button>
+          <button class="btn-save" onclick="saveGhToken()">儲存</button>
+        </div>
+      </div>`;
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+    document.getElementById('gh-pat-input').focus();
+  }
+
+  async function testGhToken() {
+    const token  = document.getElementById('gh-pat-input').value.trim();
+    const result = document.getElementById('gh-test-result');
+    if (!token) { result.textContent = '請輸入 Token'; result.style.color = '#f59e0b'; return; }
+    result.textContent = '測試中…'; result.style.color = '#6b7280';
+    try {
+      const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (r.ok) { result.textContent = '✓ 連線成功！'; result.style.color = '#16a34a'; }
+      else       { result.textContent = '✗ 連線失敗，請確認 Token 正確且有 repo 權限'; result.style.color = '#dc2626'; }
+    } catch {
+      result.textContent = '✗ 網路錯誤'; result.style.color = '#dc2626';
+    }
+  }
+
+  function saveGhToken() {
+    const token = document.getElementById('gh-pat-input').value.trim();
+    if (token) localStorage.setItem('gh-pat', token);
+    document.getElementById('gh-modal-overlay')?.remove();
+    updateGhIndicator();
+  }
+
+  function clearGhToken() {
+    localStorage.removeItem('gh-pat');
+    document.getElementById('gh-modal-overlay')?.remove();
+    updateGhIndicator();
+  }
+
+  function updateGhIndicator() {
+    const el = document.getElementById('gh-indicator');
+    if (!el) return;
+    if (ghToken()) {
+      el.textContent = '● GitHub 已連線';
+      el.className = 'gh-indicator connected';
+    } else {
+      el.textContent = '○ 設定 GitHub';
+      el.className = 'gh-indicator disconnected';
+    }
   }
 
   function exportScreenshots() {
@@ -864,6 +1145,13 @@
       wrap.style.display = 'inline-block';
       placeholder.style.display = 'none';
       try { localStorage.setItem(key, dataUrl); } catch(_) {}
+
+      // GitHub 自動同步
+      const rowId    = placeholder.dataset.row;
+      const statusEl = placeholder.parentElement.querySelector('.gh-status');
+      if (statusEl && isAdmin()) {
+        commitImageToGitHub(rowId, dataUrl, statusEl);
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -886,13 +1174,17 @@
       }
     });
 
-    // 失焦時儲存並顯示閃爍確認
+    // 失焦時儲存並顯示閃爍確認，同步到 GitHub
     el.addEventListener('blur', () => {
       const val = el.textContent.trim();
       if (val) {
         localStorage.setItem(el.dataset.key, val);
         el.classList.add('saved-flash');
         setTimeout(() => el.classList.remove('saved-flash'), 800);
+        if (isAdmin() && ghToken()) {
+          const rowId = el.dataset.key.replace('loc-', '');
+          syncLocationToGitHub(rowId, val);
+        }
       }
     });
   });
