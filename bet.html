@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 縣市首長賭盤</title>
+  <style>
+    :root {
+      --color-bg: #f5f4f0;
+      --color-surface: #ffffff;
+      --color-header-bg: #1c2b3a;
+      --color-accent: #e8630a;
+      --color-text: #1a1a1a;
+      --color-text-muted: #6b7280;
+      --color-border: #e5e7eb;
+      --color-win: #16a34a;
+      --color-win-bg: #f0fdf4;
+      --color-lose: #dc2626;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-sans); background: var(--color-bg); color: var(--color-text); min-height: 100vh; }
+    header { background: var(--color-header-bg); color: #fff; padding: 2rem 1.5rem; }
+    .inner { max-width: 1200px; margin: 0 auto; }
+    .tag { display: inline-block; background: var(--color-accent); font-size: .7rem; font-weight: 700; letter-spacing: .12em; padding: .25rem .6rem; border-radius: 3px; margin-bottom: .75rem; }
+    h1 { font-size: 1.75rem; margin-bottom: .5rem; }
+    .meta { font-size: .85rem; color: rgba(255,255,255,.6); }
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem 4rem; display: grid; gap: 1.5rem; }
+    section { background: var(--color-surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; }
+    h2 { font-size: 1.05rem; margin-bottom: .9rem; }
+    .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    input, select, button { font: inherit; font-size: .9rem; padding: .45rem .7rem; border: 1px solid var(--color-border); border-radius: 6px; background: #fff; }
+    button { cursor: pointer; background: var(--color-header-bg); color: #fff; border-color: var(--color-header-bg); }
+    button.ghost { background: #fff; color: var(--color-text); border-color: var(--color-border); }
+    button.danger { background: #fff; color: var(--color-lose); border-color: var(--color-border); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    th, td { padding: .6rem .75rem; text-align: left; border-bottom: 1px solid var(--color-border); white-space: nowrap; }
+    th { font-size: .75rem; color: var(--color-text-muted); font-weight: 600; }
+    td.hit { background: var(--color-win-bg); color: var(--color-win); font-weight: 600; }
+    td.miss { color: var(--color-lose); }
+    .board { list-style: none; display: grid; gap: .5rem; }
+    .board li { display: flex; justify-content: space-between; padding: .6rem .9rem; border: 1px solid var(--color-border); border-radius: 6px; }
+    .board li:first-child { border-color: var(--color-accent); background: #fff7ed; font-weight: 700; }
+    .hint { font-size: .8rem; color: var(--color-text-muted); margin-top: .6rem; line-height: 1.6; }
+    details summary { cursor: pointer; font-size: .9rem; margin-bottom: .6rem; }
+    textarea { width: 100%; min-height: 110px; font: inherit; font-size: .8rem; padding: .6rem; border: 1px solid var(--color-border); border-radius: 6px; }
+    .opts-input { width: 100%; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner">
+      <span class="tag">FRIENDS ONLY</span>
+      <h1>2026 縣市首長賭盤</h1>
+      <p class="meta">六都 + 新竹縣市 · 投票日 2026/11/28 · <span id="countdown"></span> · 純屬朋友間娛樂</p>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>排行榜</h2>
+      <ol class="board" id="board"></ol>
+      <p class="hint">猜對一個縣市得 1 分,同分並列。開票後在下方「開獎」填入結果即自動計分。</p>
+    </section>
+
+    <section>
+      <h2>下注表</h2>
+      <div class="row" style="margin-bottom:1rem">
+        <input id="newPlayer" placeholder="朋友名字">
+        <button id="addPlayer">新增玩家</button>
+      </div>
+      <div class="table-wrap"><table id="grid"></table></div>
+      <p class="hint">每格下拉選擇該縣市當選人。綠底 = 猜中,紅字 = 猜錯。</p>
+    </section>
+
+    <section>
+      <h2>開獎</h2>
+      <div class="table-wrap"><table id="results"></table></div>
+      <details style="margin-top:1rem">
+        <summary>編輯各縣市選項(預設為政黨,可改成候選人名字,以逗號分隔)</summary>
+        <div id="optEditor" class="row" style="flex-direction:column;align-items:stretch"></div>
+      </details>
+    </section>
+
+    <section>
+      <h2>備份 / 分享</h2>
+      <p class="hint" style="margin:0 0 .6rem">資料存在這台裝置的瀏覽器。要換裝置或讓大家看同一份,請匯出後貼給對方匯入。</p>
+      <div class="row" style="margin-bottom:.6rem">
+        <button id="export">匯出</button>
+        <button id="import" class="ghost">匯入</button>
+        <button id="reset" class="danger">全部清除</button>
+      </div>
+      <textarea id="io" placeholder="匯出的內容會顯示在這裡;要匯入請貼上後按「匯入」"></textarea>
+    </section>
+  </main>
+
+  <script>
+    const COUNTIES = ['臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市', '新竹縣', '新竹市'];
+    const DEFAULT_OPTS = '國民黨,民進黨,民眾黨,其他';
+    const KEY = 'bet2026';
+    const ELECTION = new Date('2026-11-28T00:00:00+08:00');
+
+    const blank = () => ({
+      players: [],
+      opts: Object.fromEntries(COUNTIES.map(c => [c, DEFAULT_OPTS.split(',')])),
+      picks: {},    // picks[player][county] = option
+      results: {}   // results[county] = option
+    });
+
+    let state = blank();
+    try { state = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY))); } catch (e) {}
+
+    const $ = id => document.getElementById(id);
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} render(); };
+    const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+    const optionTags = (c, selected) =>
+      '<option value="">—</option>' +
+      state.opts[c].map(o => `<option${o === selected ? ' selected' : ''}>${esc(o)}</option>`).join('');
+
+    const score = p => COUNTIES.filter(c => state.results[c] && state.picks[p]?.[c] === state.results[c]).length;
+
+    function render() {
+      const days = Math.ceil((ELECTION - Date.now()) / 864e5);
+      $('countdown').textContent = days > 0 ? `倒數 ${days} 天` : days === 0 ? '今天投票!' : '已投票';
+
+      const ranked = [...state.players].sort((a, b) => score(b) - score(a));
+      $('board').innerHTML = ranked.length
+        ? ranked.map(p => `<li><span>${esc(p)}</span><span>${score(p)} 分</span></li>`).join('')
+        : '<li style="color:var(--color-text-muted)">還沒有玩家</li>';
+
+      $('grid').innerHTML =
+        '<thead><tr><th>玩家</th>' + COUNTIES.map(c => `<th>${c}</th>`).join('') + '<th>得分</th><th></th></tr></thead><tbody>' +
+        state.players.map((p, i) => '<tr><td>' + esc(p) + '</td>' + COUNTIES.map(c => {
+          const pick = state.picks[p]?.[c] || '';
+          const r = state.results[c];
+          const cls = r && pick ? (pick === r ? 'hit' : 'miss') : '';
+          return `<td class="${cls}"><select data-p="${i}" data-c="${c}">${optionTags(c, pick)}</select></td>`;
+        }).join('') + `<td>${score(p)}</td><td><button class="danger" data-del="${i}">刪除</button></td></tr>`).join('') + '</tbody>';
+
+      $('results').innerHTML =
+        '<thead><tr>' + COUNTIES.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody><tr>' +
+        COUNTIES.map(c => `<td><select data-r="${c}">${optionTags(c, state.results[c])}</select></td>`).join('') + '</tr></tbody>';
+
+      $('optEditor').innerHTML = COUNTIES.map(c =>
+        `<label class="row"><span style="width:4.5rem">${c}</span><input class="opts-input" style="flex:1" data-o="${c}" value="${esc(state.opts[c].join(','))}"></label>`).join('');
+    }
+
+    document.addEventListener('change', e => {
+      const t = e.target;
+      if (t.dataset.p !== undefined) {
+        const p = state.players[t.dataset.p];
+        (state.picks[p] ||= {})[t.dataset.c] = t.value;
+        save();
+      } else if (t.dataset.r) {
+        state.results[t.dataset.r] = t.value;
+        save();
+      } else if (t.dataset.o) {
+        const list = t.value.split(/[,,]/).map(s => s.trim()).filter(Boolean);
+        if (list.length >= 2) state.opts[t.dataset.o] = list;
+        save();
+      }
+    });
+
+    document.addEventListener('click', e => {
+      const i = e.target.dataset.del;
+      if (i !== undefined && confirm('確定刪除 ' + state.players[i] + '?')) {
+        delete state.picks[state.players[i]];
+        state.players.splice(i, 1);
+        save();
+      }
+    });
+
+    $('addPlayer').onclick = () => {
+      const name = $('newPlayer').value.trim();
+      if (!name || state.players.includes(name)) return;
+      state.players.push(name);
+      $('newPlayer').value = '';
+      save();
+    };
+    $('newPlayer').onkeydown = e => { if (e.key === 'Enter') $('addPlayer').click(); };
+
+    $('export').onclick = () => { $('io').value = JSON.stringify(state); $('io').select(); };
+    $('import').onclick = () => {
+      try {
+        const data = JSON.parse($('io').value);
+        if (!Array.isArray(data.players)) throw 0;
+        state = Object.assign(blank(), data);
+        save();
+      } catch (e) { alert('格式不對,無法匯入'); }
+    };
+    $('reset').onclick = () => { if (confirm('會清除所有玩家與結果,確定?')) { state = blank(); save(); } };
+
+    render();
+  </script>
+</body>
+</html>
